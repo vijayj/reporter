@@ -32,8 +32,15 @@ Approach
 
 The approach to calculating overlaps is simple. The idea is...
 
+I have written a simple program given that I am working for a client and don't really have lots of time during weekdays to work on the issue. In real world, I would move db initialization into its own class, queries in a repository class, string and data manipulations into a helper library that I will mixin and a the main reporter class. In addition, I would have a main class that parses user options
 
 Other approaches
+
+1. segment time and query databases for overlaps
+
 select  sum(bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)))  from transfers where xfer_start <= "2012-05-30 02:00:00" and xfer_end >= "2012-05-30 01:00:00";
 select  avg(bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)))  from transfers where xfer_start <= "2012-05-30 02:00:00" and xfer_end >= "2012-05-30 01:00:00";
 24027217.9884943
+
+select  avg(bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)))/(1024*1024)  from transfers where xfer_start <= "2012-05-30 04:00:00" and xfer_end >= "2012-05-30 03:00:00";
+21.4160583016406
