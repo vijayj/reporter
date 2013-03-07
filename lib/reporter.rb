@@ -19,12 +19,12 @@ class Reporter
     hour_start,hour_end = split_reporting_period_at_hour_boundary(@start_time, @end_time)
     hour = hour_start
     output = []
-    begin
-      he = hour_start + 3600
-      records = overlapping_records(hour_start, he)
-      output << aggregate_data(records, hour_start, he)
-      hour_start = he
-    end while (hour_start) < hour_end
+    while(hour < hour_end)
+      end_time = hour + 3600
+      records = overlapping_records(hour, end_time)
+      output << aggregate_data(records, hour, end_time)
+      hour = end_time
+    end
     
     print_formatted output
   end
@@ -46,13 +46,9 @@ class Reporter
     
     total = sum/MEGABYTE    
     avg = total/count
-    time_interval = "#{start_time.strftime('%H%p')} - #{end_time.strftime('%H%p')}"
+    time_interval = "#{format_hour(start_time)} - #{format_hour(end_time)}"
     [time_interval,total,avg]
   end  
-    
-  def report_per_hour(start_hour)
-    start_hour
-  end
   
   def split_reporting_period_at_hour_boundary(start_time, end_time)
     hs = Time.parse(start_time)
@@ -67,49 +63,21 @@ class Reporter
   end
   
   def overlapping_records(st_time, et_time)
-    st_time = st_time.strftime "%Y-%m-%d %H:%M:%S"
-    et_time = et_time.strftime "%Y-%m-%d %H:%M:%S"
-    # p "overlapping records #{st_time}..#{et_time}"
-    # stmt = db.prepare( "select * from transfers where xfer_start <= '#{et_time}' and xfer_end >= '#{st_time}'" )
     stmt = db.prepare( "select xfer_start,xfer_end,bytes_transferred, bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)) as avg from transfers where xfer_start <= :end_time and xfer_end >= :start_time")
-    # select xfer_start,xfer_end,bytes_transferred, bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)) from transfers where xfer_start <= "2012-05-30 02:00:00" and xfer_end >= "2012-05-30 01:00:00";
-    stmt.bind_params("end_time" => et_time, "start_time" => st_time)
+    stmt.bind_params("end_time" => format_time_for_db(et_time), "start_time" => format_time_for_db(st_time))
     stmt.execute    
   end
-
-  # def run
-  #   w = WordMatcher.load_from_file(@word_file)
-  #   w.find
-  #   p "longest word is - #{w.longest_match}"
-  #   p "Total count of matching long words from words - #{w.all_matched_words_count}"
-  # rescue Errno::ENOENT => e
-  #   p "Seems like we have a missing file. please pass in a valid file"
-  # end
+  
+  def format_time_for_db(time)
+    time.strftime "%Y-%m-%d %H:%M:%S"
+  end
+  
+  def format_hour(time)
+    time.strftime "%H%p"
+  end
 end
 
-# 
-# options = {}
-# optparse = OptionParser.new do |opts|
-#   opts.banner = "Usage: ruby match.rb [options]"
-# 
-#   opts.on("-f", "--filename FILENAME", "file with words") do |f|
-#     options[:filename] = f
-#   end
-# end
-# 
-# begin
-#   optparse.parse!
-#   if options[:filename].nil?
-#     puts optparse
-#     puts exit
-#   end
-# rescue OptionParser::InvalidOption, OptionParser::MissingArgument => e
-#   puts e.to_s
-#   puts optparse
-#   exit
-# end
-# 
-# puts "Starting matcher with arguments: #{options.inspect}"
+
 Reporter.new("reporter.db", '2012-05-30 01:00:00','2012-05-30 04:00:00').run
 
 

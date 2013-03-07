@@ -6,41 +6,40 @@ Ensure you have ruby 1.9.3
 Install the bundler gem
 run bundle install to install gems (I used pry and rspec)
 
-To install database
+To prepare data
+
 run sqlite3 reporter.db
 run following commands in sqlite3 console
 create table transfers ( xfer_start datetime, xfer_end datetime, bytes_transferred integer);
 .mode csv
+.separator ","
 .import ./bandwidth_report_sample_data.csv transfers
+#clean up the table to remove headers
 delete from transfers where xfer_start='xfer_start';
-Enusre that select count(*) from transfers => 19
 
-run ruby lib/match.rb -f spec/fixtures/words_for_problem.txt 
+Ensure that select count(*) from transfers => 19
 
+run ruby lib/reporter.rb
 
 Tests
 rake -T will show all tasks
-To run default tests, run rake spec . There are 2 tests in the spec class that read the entire input
-
-Benchmarks
-run rake spec_with_benchmarks
-There are 2 tests. The first one assumes that word list is created by another class and passed to the matcher.
-The second one reads the file in the class. I have found that reading the file in with ruby is slow
-
+To run default tests,  bundle exec rake spec. There is a test that will print the final output
 
 Approach
 
-The approach to calculating overlaps is simple. The idea is...
+The approach to calculating overlaps is simple. The idea is to figure out if the transfer_start_time is less than the interval end time and transfer_end_time is greater than interval start time
 
-I have written a simple program given that I am working for a client and don't really have lots of time during weekdays to work on the issue. In real world, I would move db initialization into its own class, queries in a repository class, string and data manipulations into a helper library that I will mixin and a the main reporter class. In addition, I would have a main class that parses user options
+I have written a simple program that works. I am consulting for a client at the moment and did not have lot of time to polish it. In real world, I would move db initialization into its own class, queries in a repository class, string and data manipulations into a helper library that I will mixin and a the main reporter class. In addition, I would have a main class that parses user options
+
+
+Edge Cases
+I have not handled edge cases. I am assuming that ranges is given correctly in input such that start_time < end_time
+
 
 Other approaches
-
-1. segment time and query databases for overlaps
+1. segment time and query databases for overlaps - sum and avg
 
 select  sum(bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)))  from transfers where xfer_start <= "2012-05-30 02:00:00" and xfer_end >= "2012-05-30 01:00:00";
-select  avg(bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)))  from transfers where xfer_start <= "2012-05-30 02:00:00" and xfer_end >= "2012-05-30 01:00:00";
-24027217.9884943
 
 select  avg(bytes_transferred*1.0/(strftime('%s',xfer_end) - strftime('%s',xfer_start)))/(1024*1024)  from transfers where xfer_start <= "2012-05-30 04:00:00" and xfer_end >= "2012-05-30 03:00:00";
 21.4160583016406

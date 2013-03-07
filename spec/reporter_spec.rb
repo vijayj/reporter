@@ -2,7 +2,6 @@ require 'spec_helper'
 require_relative '../lib/reporter.rb'
 
 #This test assumes data is loaded in database
-
 describe "Reporter" do
   let(:start_time) { '2012-05-30 01:00:00' }
   let(:end_time) { '2012-05-30 04:00:00' }
