@@ -7,14 +7,13 @@ describe "Reporter" do
   let(:end_time) { '2012-05-30 04:00:00' }
   let(:reporter) { Reporter.new("reporter.db",start_time , end_time) }
   
-  context "count records" do
-    
+  context "count records" do  
     it "should have 18 matching records for given time" do
       records = reporter.overlapping_records(Time.parse(start_time), Time.parse(end_time))
       records.count.should == 18
     end
     
-    it "should count all records" do
+    it "should show all records" do
       reporter.db.get_first_value("select count(*) from transfers" ).should == 19
     end
     
@@ -23,7 +22,7 @@ describe "Reporter" do
       records.count.should == 15
     end
     
-    it "should have average computed per row" do
+    it "should have average byte transfer computed per row" do
         records = reporter.overlapping_records(Time.parse(start_time), Time.parse(start_time) + 3600)
         records.first["avg"].should == 718.6132329209253        
     end

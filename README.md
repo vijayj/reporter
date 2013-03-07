@@ -7,19 +7,24 @@ Install the bundler gem
 run bundle install to install gems (I used pry and rspec)
 
 To prepare data
+  run sqlite3 reporter.db
+  I have the file with the data preloaded in transfers table.  
 
-run sqlite3 reporter.db
-run following commands in sqlite3 console
-create table transfers ( xfer_start datetime, xfer_end datetime, bytes_transferred integer);
-.mode csv
-.separator ","
-.import ./bandwidth_report_sample_data.csv transfers
-#clean up the table to remove headers
-delete from transfers where xfer_start='xfer_start';
+If you want to run in cleanly in a default instance - do the following
+  run following commands in sqlite3 console
+  create table transfers ( xfer_start datetime, xfer_end datetime, bytes_transferred integer);
+  .mode csv
+  .separator ","
+  .import ./bandwidth_report_sample_data.csv transfers
+  #clean up the table to remove headers
+  delete from transfers where xfer_start='xfer_start';
 
-Ensure that select count(*) from transfers => 19
+Test
+  Ensure that select count(*) from transfers => 19
 
-run ruby lib/reporter.rb
+Run
+  run ruby lib/reporter.rb
+  Better yet run - bundle exec rake spec
 
 Tests
 rake -T will show all tasks
